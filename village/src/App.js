@@ -5,11 +5,13 @@ import { Route, NavLink } from 'react-router-dom'
 import './App.css';
 import SmurfForm from './components/SmurfForm';
 import Smurfs from './components/Smurfs';
+import UpdateForm from './components/UpdateForm';
 
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      active: [],
       smurfs: [],
     };
   }
@@ -38,14 +40,45 @@ class App extends Component {
       })
   }
 
+  updateSmurf = smurf => {
+    axios.put(`http://localhost:3333/smurfs/${smurf.id}`, smurf)
+      .then(res => {
+        this.setState({
+          smurfs: res.data
+        })
+      })
+      .catch(err => {
+        console.log(`Error: ${err}`)
+      })
+  }
+
+  setActiveSmurf = smurf => {
+    this.setState({
+      active: smurf
+    })
+  }
+
+  deleteSmurf = smurf => {
+    axios.delete(`http://localhost:3333/smurfs/${smurf.id}`)
+      .then(res => {
+        this.setState({
+          smurfs: res.data
+        })
+      })
+      .catch(err => {
+        console.log(`Error: ${err}`)
+      })
+  }
+
 
   render() {
     return (
       <div className="App">
         <NavLink to="/">home</NavLink>
         <NavLink to="/smurf-form">Add a Smurf</NavLink>
-        <Route exact path="/" render={() => <Smurfs smurfs={this.state.smurfs} />} />
-        <Route path="/smurf-form" render={props => <SmurfForm {...props} createSmurf={this.createSmurf}/>} />
+        <Route exact path="/" render={props => <Smurfs {...props} smurfs={this.state.smurfs} deleteSmurf={this.deleteSmurf} setActive={this.setActiveSmurf} />} />
+        <Route path="/smurf-form" render={props => <SmurfForm {...props} createSmurf={this.createSmurf} />} />
+        <Route path="/update-form" render={props => <UpdateForm {...props} smurf={this.state.active} updateSmurf={this.updateSmurf} />} />
       </div>
     );
   }
